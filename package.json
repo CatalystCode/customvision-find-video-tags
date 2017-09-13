@@ -1,8 +1,11 @@
 {
   "name": "customvision-find-video-tags",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "description": "Find highest probability video tags with Microsoft custom vision ai in a video",
   "main": "index.js",
+  "repository": {
+    "url": "https://github.com/CatalystCode/customvision-find-video-tags"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

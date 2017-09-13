@@ -25,6 +25,7 @@ function download(url, dest, cb) {
  * @param {object} options A temporary location to put the video in
  * @param {string} options.rootPath A root folder for the output
  * @param {string} options.tempFolder A temporary location to put the video in
+ * @param {string} options.every_n_seconds A temporary location to put the video in (default: 1)
  * @param {function} callback 
  */
 function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, callback) {
@@ -34,18 +35,20 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
   if (!video) { throw new Error('video url is not provided'); }
   if (!Array.isArray(tags) || tags.length <= 0) { throw new Error('tags should have at least one item'); }
 
-  callback = callback || typeof(options) === 'function' ? options : () => {};
+  callback = callback || (typeof(options) === 'function' ? options : () => {});
   options = (typeof(options) === 'function' ? null : options) || {};
 
+  let relPath = path.join('node_modules', 'customvision-find-video-tags');
   let rootPath = options.rootPath || 
-    __dirname.endsWith('node_modules\\ffmpeg-ensure') || __dirname.endsWith('node_modules/ffmpeg-ensure') ?
-    __dirname.substr(0, __dirname.length - 'node_modules/ffmpeg-ensure'.length) :
+    __dirname.endsWith(relPath) ?
+    __dirname.substr(0, __dirname.length - relPath.length) :
     __dirname;
 
-  let tempFolder = options.tempFolder || path.join(__dirname, )
+  let tempFolder = options.tempFolder || path.join(rootPath, 'temp');
 
   let tempVideoPath = path.join(tempFolder, 'video' + path.extname(video));
-  let outputFolder = path.join(tempFolder, 'output' + path.extname(video));
+  let outputFolder = path.join(tempFolder, 'output');
+  let every_n_seconds = options.every_n_seconds || 1; 
   download(video, tempVideoPath, () => {
 
     try {
@@ -56,7 +59,7 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
           if (err) { return callback(err); }
 
           video.fnExtractFrameToJPG(outputFolder, {
-            every_n_seconds: 0.5, 
+            every_n_seconds: every_n_seconds, 
             keep_pixel_aspect_ratio: true,
             keep_aspect_ratio: true,
             padding_color: 'black'
@@ -92,8 +95,13 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
                 return cb();
               });
             }, (err) => {
-              let anchorIndexes = { 'side': -1, 'front': -1, 'back': -1 };
-              let anchorValues = { 'side': -1, 'front': -1, 'back': -1 };
+              let anchorIndexes = {};
+              let anchorValues = {};
+              tags.forEach(tag => {
+                anchorIndexes[tag] = -1;
+                anchorValues[tag] = -1;
+              });
+
               Object.keys(replies).forEach(idx => {
                 let rep = replies[idx];
                 if (rep.Probability < 0.01) { return; }
@@ -106,6 +114,11 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
               // Deleting temporary files
               fs.unlinkSync(tempVideoPath);
               files.forEach(file => fs.unlinkSync(file));
+
+              Object.keys(anchorIndexes).forEach(tag => {
+                if (anchorIndexes[tag] === -1) { return; }
+                anchorIndexes[tag] = anchorIndexes[tag] * every_n_seconds * 1000
+              });
 
               return callback(null, anchorIndexes);
             });
