@@ -13,8 +13,6 @@ This module will;
 # Usage
 
 ```js
-
-// Basic sample
 let { pinTagsInVideo } = require('customvision-find-video-tags');
 
 pinTagsInVideo(
@@ -27,8 +25,13 @@ pinTagsInVideo(
     console.log('done');
   }
 );
+```
 
-// Using ffmpeg-ensure
+# Using ffmpeg
+
+If you want to use ffmpeg without installing it locally, you can use [ffmpeg-ensure](https://github.com/CatalystCode/ffmpeg-ensure):
+
+```js
 let { ensureFFMPEG } = require('ffmpeg-ensure');
 let { pinTagsInVideo } = require('customvision-find-video-tags');
 
@@ -44,5 +47,4 @@ ensureFFMPEG().then(() => {
     }
   );
 });
-
 ```
