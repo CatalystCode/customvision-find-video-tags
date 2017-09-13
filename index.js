@@ -49,11 +49,13 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
   let tempVideoPath = path.join(tempFolder, 'video' + path.extname(video));
   let outputFolder = path.join(tempFolder, 'output');
   let every_n_seconds = options.every_n_seconds || 1; 
-  download(video, tempVideoPath, () => {
+
+  // Process a video into images
+  const processVideo = (localVideoPath, deleteAfterProcess) => {
 
     try {
       new ffmpeg(
-        tempVideoPath,
+        localVideoPath,
         (err, video) => {
         
           if (err) { return callback(err); }
@@ -112,7 +114,7 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
               });            
 
               // Deleting temporary files
-              fs.unlinkSync(tempVideoPath);
+              if (deleteAfterProcess) { fs.unlinkSync(localVideoPath); }
               files.forEach(file => fs.unlinkSync(file));
 
               Object.keys(anchorIndexes).forEach(tag => {
@@ -128,8 +130,13 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
     } catch (e) {
       return callback(e);
     }
-  });
+  }
 
+  if (video.startsWith('http://') || video.startsWith('https://') || video.startsWith('tcp://')) {
+    download(video, tempVideoPath, () => processVideo(tempVideoPath, true));    
+  } else {
+    processVideo(video);
+  }
 }
 
 module.exports = {
