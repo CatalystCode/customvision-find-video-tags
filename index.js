@@ -60,8 +60,11 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
         
           if (err) { return callback(err); }
 
+          // This is a fail safe, since every_n_seconds doesn't seem to work well
+          let fps = (video && video.metadata && video.metadata.video && video.metadata.video.fps || 0) * every_n_seconds;
+
           video.fnExtractFrameToJPG(outputFolder, {
-            every_n_seconds: every_n_seconds, 
+            every_n_frames: Math.round(fps) || 1,
             keep_pixel_aspect_ratio: true,
             keep_aspect_ratio: true,
             padding_color: 'black'
@@ -73,7 +76,8 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
 
             async.eachSeries(files, (file, cb) => {
 
-              let index = files.indexOf(file);
+              let filename = path.basename(file);
+              let index = parseInt(filename.substr(0, filename.length - path.extname(filename).length).split('_')[1]) - 1;
               request({
                 headers: {
                   'Prediction-Key': predictionKey,
@@ -114,7 +118,7 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
               });            
 
               // Deleting temporary files
-              if (deleteAfterProcess) { fs.unlinkSync(localVideoPath); }
+              if (deleteAfterProcess) { fs.unlinkSync(tempVideoPath); }
               files.forEach(file => fs.unlinkSync(file));
 
               Object.keys(anchorIndexes).forEach(tag => {
@@ -135,7 +139,7 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
   if (video.startsWith('http://') || video.startsWith('https://') || video.startsWith('tcp://')) {
     download(video, tempVideoPath, () => processVideo(tempVideoPath, true));    
   } else {
-    processVideo(video);
+    processVideo(tempVideoPath);
   }
 }
 

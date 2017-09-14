@@ -1,6 +1,6 @@
 {
   "name": "customvision-find-video-tags",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "Find highest probability video tags with Microsoft custom vision ai in a video",
   "main": "index.js",
   "repository": {
