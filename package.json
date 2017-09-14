@@ -1,6 +1,6 @@
 {
   "name": "customvision-find-video-tags",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Find highest probability video tags with Microsoft custom vision ai in a video",
   "main": "index.js",
   "repository": {
@@ -14,6 +14,7 @@
   "dependencies": {
     "async": "^2.5.0",
     "ffmpeg": "0.0.4",
+    "fs-extra": "^4.0.2",
     "lodash": "^4.17.4",
     "request": "^2.81.0",
     "request-promise": "^4.2.1"

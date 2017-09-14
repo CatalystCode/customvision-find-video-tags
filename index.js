@@ -1,5 +1,5 @@
 let http = require('http');
-let fs = require('fs');
+let fs = require('fs-extra');
 let path = require('path');
 let request = require('request-promise');
 let ffmpeg = require('ffmpeg');
@@ -49,6 +49,9 @@ function pinTagsInVideo(predictionUrl, predictionKey, video, tags, options, call
   let tempVideoPath = path.join(tempFolder, 'video' + path.extname(video));
   let outputFolder = path.join(tempFolder, 'output');
   let every_n_seconds = options.every_n_seconds || 1; 
+
+  fs.ensureDirSync(tempFolder);
+  fs.ensureDirSync(outputFolder);
 
   // Process a video into images
   const processVideo = (localVideoPath, deleteAfterProcess) => {
